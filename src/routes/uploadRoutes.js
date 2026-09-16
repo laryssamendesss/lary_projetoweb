@@ -6,13 +6,14 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 const tiposAceitos = ["image/jpeg", "image/png", "image/webp"];
+const limiteUploadMb = Number(process.env.UPLOAD_MAX_SIZE_MB) || 5;
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, callback) => callback(null, `${randomUUID()}${path.extname(file.originalname).toLowerCase()}`)
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: limiteUploadMb * 1024 * 1024 },
   fileFilter: (req, file, callback) => {
     if (!tiposAceitos.includes(file.mimetype)) return callback(new Error("TIPO_INVALIDO"));
     callback(null, true);

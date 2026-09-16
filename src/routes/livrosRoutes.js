@@ -14,8 +14,6 @@ const campos = ["titulo", "autor", "ano", "genero"];
 const idValido = (valor) => /^\d+$/.test(valor) && Number(valor) > 0;
 const camposAusentes = (body) => campos.filter((campo) => body[campo] === undefined || body[campo] === null || body[campo] === "");
 
-router.use(authMiddleware);
-
 /**
  * @swagger
  * /livros:
@@ -38,7 +36,7 @@ router.use(authMiddleware);
  */
 router.route("/")
   .get((req, res) => res.json(livros))
-  .post((req, res) => {
+  .post(authMiddleware, (req, res) => {
     const ausentes = camposAusentes(req.body);
     if (ausentes.length) return res.status(400).json({ erro: "Campos obrigatórios ausentes.", campos: ausentes });
     const livro = {
@@ -57,7 +55,6 @@ router.route("/")
  * /livros/{id}:
  *   get:
  *     summary: Busca um livro por ID
- *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
@@ -68,6 +65,22 @@ router.route("/")
  *       404: { description: Livro não encontrado }
  *   put:
  *     summary: Atualiza um livro
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/LivroInput' }
+ *     responses:
+ *       200: { description: Livro atualizado }
+ *       404: { description: Livro não encontrado }
+ *   patch:
+ *     summary: Altera parcialmente um livro
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -101,7 +114,7 @@ router.route("/:id")
     if (!livro) return res.status(404).json({ erro: "Livro não encontrado." });
     res.json(livro);
   })
-  .put((req, res) => {
+  .put(authMiddleware, (req, res) => {
     if (!idValido(req.params.id)) return res.status(400).json({ erro: "ID inválido." });
     const livro = livros.find((item) => item.id === Number(req.params.id));
     if (!livro) return res.status(404).json({ erro: "Livro não encontrado." });
@@ -110,7 +123,19 @@ router.route("/:id")
     Object.assign(livro, { ...req.body, ano: Number(req.body.ano) });
     res.json({ mensagem: "Livro atualizado com sucesso.", livro });
   })
-  .delete((req, res) => {
+  .patch(authMiddleware, (req, res) => {
+    if (!idValido(req.params.id)) return res.status(400).json({ erro: "ID inválido." });
+    const livro = livros.find((item) => item.id === Number(req.params.id));
+    if (!livro) return res.status(404).json({ erro: "Livro não encontrado." });
+    const camposRecebidos = Object.keys(req.body);
+    const camposInvalidos = camposRecebidos.filter((campo) => !campos.includes(campo));
+    if (camposInvalidos.length) return res.status(400).json({ erro: "Campos inválidos.", campos: camposInvalidos });
+    if (!camposRecebidos.length) return res.status(400).json({ erro: "Informe ao menos um campo para atualizar." });
+    Object.assign(livro, req.body);
+    if (req.body.ano !== undefined) livro.ano = Number(req.body.ano);
+    res.json({ mensagem: "Livro atualizado parcialmente com sucesso.", livro });
+  })
+  .delete(authMiddleware, (req, res) => {
     if (!idValido(req.params.id)) return res.status(400).json({ erro: "ID inválido." });
     const indice = livros.findIndex((item) => item.id === Number(req.params.id));
     if (indice === -1) return res.status(404).json({ erro: "Livro não encontrado." });

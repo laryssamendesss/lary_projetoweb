@@ -16,7 +16,7 @@ Para desenvolvimento: `npm run dev`.
 
 ## Autorização no Insomnia
 
-Nas rotas protegidas, envie `Authorization: Bearer livraria-token-2026`. Sem o cabeçalho, a API retorna HTTP 401.
+Os GETs de livros são públicos. Para POST, PATCH, PUT, DELETE e upload, envie `Authorization: Bearer LARYLINDA`. Sem o cabeçalho, a API retorna HTTP 401.
 
 ## Rotas
 
@@ -26,6 +26,7 @@ Nas rotas protegidas, envie `Authorization: Bearer livraria-token-2026`. Sem o c
 | GET | `/livros` | Lista livros |
 | GET | `/livros/:id` | Busca livro |
 | PUT | `/livros/:id` | Atualiza livro |
+| PATCH | `/livros/:id` | Atualiza parcialmente um livro |
 | DELETE | `/livros/:id` | Exclui livro |
 | POST | `/upload` | Envia imagem no campo `imagem` |
 
@@ -40,12 +41,21 @@ Exemplo de corpo para `POST /livros` e `PUT /livros/:id`:
 }
 ```
 
+Exemplo de corpo para `PATCH /livros/:id`:
+
+```json
+{
+  "genero": "Literatura brasileira"
+}
+```
+
 No upload, use `multipart/form-data`, campo `imagem`, com JPEG, PNG ou WEBP de até 5 MB. A pasta local é `uploads/`.
 
 ## Teste rápido no Insomnia
 
-1. `GET /livros` com o cabeçalho de autorização.
-2. `POST /livros` com o JSON acima.
-3. `GET /livros/1`, `PUT /livros/1` e `DELETE /livros/1`.
-4. `POST /upload` usando multipart e o campo `imagem`.
-5. Remova o token de uma requisição para verificar o retorno HTTP 401.
+1. `GET /livros` sem token.
+2. `GET /livros/1` sem token.
+3. `POST /livros` com o JSON acima e o token.
+4. `PATCH /livros/1`, `PUT /livros/1` e `DELETE /livros/1` com o token.
+5. `POST /upload` usando multipart e o campo `imagem`.
+6. Remova o token de uma operação de escrita para verificar o retorno HTTP 401.

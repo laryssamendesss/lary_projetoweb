@@ -16,7 +16,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API REST para gerenciamento de livros."
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: process.env.API_URL || `http://localhost:${process.env.PORT || 3000}` }],
     components: {
       securitySchemes: { bearerAuth: { type: "http", scheme: "bearer" } },
       schemas: {
