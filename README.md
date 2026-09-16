@@ -1,0 +1,51 @@
+# API REST - Biblioteca de Livros
+
+API em Node.js, Express e JavaScript para cadastrar, consultar, alterar e excluir livros e receber imagens. Os livros ficam somente em memória e são perdidos ao reiniciar o servidor. Não há banco de dados, cadastro ou login de usuários.
+
+## Instalação e execução
+
+```bash
+npm install
+npm start
+```
+
+Servidor: `http://localhost:3000`  
+Swagger: `http://localhost:3000/api-docs`
+
+Para desenvolvimento: `npm run dev`.
+
+## Autorização no Insomnia
+
+Nas rotas protegidas, envie `Authorization: Bearer livraria-token-2026`. Sem o cabeçalho, a API retorna HTTP 401.
+
+## Rotas
+
+| Método | Rota | Uso |
+| --- | --- | --- |
+| POST | `/livros` | Cadastra livro |
+| GET | `/livros` | Lista livros |
+| GET | `/livros/:id` | Busca livro |
+| PUT | `/livros/:id` | Atualiza livro |
+| DELETE | `/livros/:id` | Exclui livro |
+| POST | `/upload` | Envia imagem no campo `imagem` |
+
+Exemplo de corpo para `POST /livros` e `PUT /livros/:id`:
+
+```json
+{
+  "titulo": "Dom Casmurro",
+  "autor": "Machado de Assis",
+  "ano": 1899,
+  "genero": "Romance"
+}
+```
+
+No upload, use `multipart/form-data`, campo `imagem`, com JPEG, PNG ou WEBP de até 5 MB. A pasta local é `uploads/`.
+
+## Teste rápido no Insomnia
+
+1. `GET /livros` com o cabeçalho de autorização.
+2. `POST /livros` com o JSON acima.
+3. `GET /livros/1`, `PUT /livros/1` e `DELETE /livros/1`.
+4. `POST /upload` usando multipart e o campo `imagem`.
+5. Remova o token de uma requisição para verificar o retorno HTTP 401.
