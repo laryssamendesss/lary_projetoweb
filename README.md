@@ -1,65 +1,88 @@
-# API REST - Biblioteca de Livros
+# Biblioteca de Livros
 
-API em Node.js, Express e JavaScript para cadastrar, consultar, alterar e excluir livros e receber imagens. Os livros ficam somente em memória e são perdidos ao reiniciar o servidor. Não há banco de dados, cadastro ou login de usuários.
+API REST acadêmica para cadastro e gerenciamento de livros.
 
-## Instalação e execução
+## Tecnologias
+
+- Node.js
+- Express
+- JavaScript
+- Swagger
+- Armazenamento em memória
+
+## Como iniciar
 
 ```bash
 npm install
 npm start
 ```
 
-Servidor: `http://localhost:3000`  
+O servidor ficará disponível em `http://localhost:3000`.
+
+Durante o desenvolvimento, use `npm run dev` para iniciar com reinício automático pelo Nodemon.
+
 Swagger: `http://localhost:3000/api-docs`
-
-Para desenvolvimento: `npm run dev`.
-
-## Autorização no Insomnia
-
-Os GETs de livros são públicos. Para POST, PATCH, PUT, DELETE e upload, envie `Authorization: Bearer LARYLINDA`. Sem o cabeçalho, a API retorna HTTP 401.
 
 ## Rotas
 
-| Método | Rota | Uso |
+| Método | Rota | Objetivo |
 | --- | --- | --- |
-| POST | `/livros` | Cadastra livro |
-| GET | `/livros` | Lista livros |
-| GET | `/livros/:id` | Busca livro |
-| PUT | `/livros/:id` | Atualiza livro |
-| PATCH | `/livros/:id` | Atualiza parcialmente um livro |
-| DELETE | `/livros/:id` | Exclui livro |
-| POST | `/upload` | Envia imagem no campo `imagem` |
+| GET | `/` | Verificar se a API está funcionando |
+| POST | `/livros` | Cadastrar um livro |
+| GET | `/livros` | Listar todos os livros |
+| GET | `/livros/:id` | Buscar um livro pelo ID |
+| PATCH | `/livros/:id` | Atualizar parte de um livro |
+| DELETE | `/livros/:id` | Excluir um livro |
+| GET | `/api-docs` | Abrir a documentação Swagger |
 
-Exemplo de corpo para `POST /livros` e `PUT /livros/:id`:
+Os dados ficam somente na memória. Ao reiniciar o servidor, os 15 livros iniciais são carregados novamente.
+
+## Acesso às rotas
+
+As rotas `GET` são públicas. Para `POST`, `PATCH` e `DELETE`, envie:
+
+```text
+Authorization: Bearer LARYLINDA
+```
+
+O token vem da variável `TOKEN_SECRET` no arquivo `.env`.
+
+## JSON para POST
 
 ```json
 {
-  "titulo": "Dom Casmurro",
-  "autor": "Machado de Assis",
-  "ano": 1899,
-  "genero": "Romance"
+  "titulo": "O Primo Basílio",
+  "descricao": "Romance sobre relações e conflitos sociais",
+  "autor": "Eça de Queirós",
+  "ano": 1878,
+  "genero": "Romance",
+  "editora": "Livraria Chardron",
+  "disponivel": true
 }
 ```
 
-Exemplo de corpo para `PATCH /livros/:id`:
+No Insomnia, use `POST http://localhost:3000/livros`, selecione JSON e envie o exemplo com o token.
 
-```json
-{
-  "genero": "Literatura brasileira"
-}
-```
+## Sequência recomendada no Insomnia
 
-No upload, use `multipart/form-data`, campo `imagem`, com JPEG, PNG ou WEBP de até 5 MB. A pasta local é `uploads/`.
+1. Faça `GET /livros` sem token.
+2. Faça `GET /livros/1` sem token.
+3. Faça `POST /livros` com o token e anote o `id` retornado.
+4. Envie um ou mais campos em `PATCH /livros/1` com o token.
+5. Faça `DELETE /livros/1` com o token.
+6. Repita `GET /livros/1` para verificar a resposta 404.
 
 ## Validações
 
-No `POST` e no `PUT`, `titulo`, `autor`, `ano` e `genero` são obrigatórios. No `PATCH`, somente os campos enviados são alterados e validados. Textos não podem ficar vazios e `ano` deve ser um número inteiro positivo. JSON inválido, ID inválido, livro inexistente ou rota inexistente retornam respostas JSON com erro.
+Os campos de texto, `ano` e `disponivel` são obrigatórios no POST. No PATCH, somente os campos enviados são validados. Textos não podem ficar vazios, `ano` deve ser um número inteiro positivo e `disponivel` deve ser booleano. JSON inválido retorna 400; livro ou rota inexistente retorna 404.
 
-## Teste rápido no Insomnia
+## JSON para PATCH
 
-1. `GET /livros` sem token.
-2. `GET /livros/1` sem token.
-3. `POST /livros` com o JSON acima e o token.
-4. `PATCH /livros/1`, `PUT /livros/1` e `DELETE /livros/1` com o token.
-5. `POST /upload` usando multipart e o campo `imagem`.
-6. Remova o token de uma operação de escrita para verificar o retorno HTTP 401.
+```json
+{
+  "disponivel": false,
+  "genero": "Romance brasileiro"
+}
+```
+
+O campo `id` não é alterado pelo PATCH.

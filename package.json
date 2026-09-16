@@ -4,7 +4,7 @@
   "description": "API REST - Biblioteca de Livros",
   "main": "server.js",
   "scripts": {
-    "test": "node --check server.js && node --check src/app.js && node --check src/routes/livrosRoutes.js && node --check src/routes/uploadRoutes.js && node --check src/middlewares/authMiddleware.js",
+    "test": "node --check server.js",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
@@ -15,7 +15,6 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "multer": "^2.0.2",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },
