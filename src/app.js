@@ -29,6 +29,15 @@ const swaggerOptions = {
             ano: { type: "integer", example: 1899 },
             genero: { type: "string", example: "Romance" }
           }
+        },
+        LivroPatch: {
+          type: "object",
+          properties: {
+            titulo: { type: "string", example: "Dom Casmurro - edição revisada" },
+            autor: { type: "string", example: "Machado de Assis" },
+            ano: { type: "integer", example: 1899 },
+            genero: { type: "string", example: "Romance" }
+          }
         }
       }
     }

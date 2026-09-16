@@ -1,5 +1,5 @@
 {
-  "name": "primeiros-passos-node",
+  "name": "biblioteca-livros-api",
   "version": "1.0.0",
   "description": "API REST - Biblioteca de Livros",
   "main": "server.js",
@@ -16,7 +16,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "multer": "^2.0.2",
-    "swagger-jsdoc": "^6.2.8",
+    "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

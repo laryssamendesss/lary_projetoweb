@@ -51,6 +51,10 @@ Exemplo de corpo para `PATCH /livros/:id`:
 
 No upload, use `multipart/form-data`, campo `imagem`, com JPEG, PNG ou WEBP de até 5 MB. A pasta local é `uploads/`.
 
+## Validações
+
+No `POST` e no `PUT`, `titulo`, `autor`, `ano` e `genero` são obrigatórios. No `PATCH`, somente os campos enviados são alterados e validados. Textos não podem ficar vazios e `ano` deve ser um número inteiro positivo. JSON inválido, ID inválido, livro inexistente ou rota inexistente retornam respostas JSON com erro.
+
 ## Teste rápido no Insomnia
 
 1. `GET /livros` sem token.

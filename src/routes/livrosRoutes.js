@@ -10,9 +10,30 @@ let livros = [
   { id: 5, titulo: "Vidas Secas", autor: "Graciliano Ramos", ano: 1938, genero: "Romance" },
   { id: 6, titulo: "Capitães da Areia", autor: "Jorge Amado", ano: 1937, genero: "Romance" }
 ];
-const campos = ["titulo", "autor", "ano", "genero"];
+const camposTexto = ["titulo", "autor", "genero"];
+const campos = [...camposTexto, "ano"];
 const idValido = (valor) => /^\d+$/.test(valor) && Number(valor) > 0;
-const camposAusentes = (body) => campos.filter((campo) => body[campo] === undefined || body[campo] === null || body[campo] === "");
+
+function validarLivro(dados, parcial = false) {
+  const camposObrigatorios = parcial ? [] : campos;
+  for (const campo of camposObrigatorios) {
+    if (dados[campo] === undefined || dados[campo] === null || dados[campo] === "") {
+      return `O campo ${campo} é obrigatório.`;
+    }
+  }
+
+  for (const campo of camposTexto) {
+    if (dados[campo] !== undefined && (typeof dados[campo] !== "string" || dados[campo].trim() === "")) {
+      return `O campo ${campo} deve ser um texto não vazio.`;
+    }
+  }
+
+  if (dados.ano !== undefined && (!Number.isInteger(Number(dados.ano)) || Number(dados.ano) <= 0)) {
+    return "O campo ano deve ser um número inteiro positivo.";
+  }
+
+  return null;
+}
 
 /**
  * @swagger
@@ -30,21 +51,20 @@ const camposAusentes = (body) => campos.filter((campo) => body[campo] === undefi
  *       400: { description: Campos obrigatórios ausentes }
  *   get:
  *     summary: Lista todos os livros
- *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Lista de livros }
  */
 router.route("/")
   .get((req, res) => res.json(livros))
   .post(authMiddleware, (req, res) => {
-    const ausentes = camposAusentes(req.body);
-    if (ausentes.length) return res.status(400).json({ erro: "Campos obrigatórios ausentes.", campos: ausentes });
+    const erro = validarLivro(req.body);
+    if (erro) return res.status(400).json({ erro });
     const livro = {
       id: livros.length ? Math.max(...livros.map((item) => item.id)) + 1 : 1,
-      titulo: req.body.titulo,
-      autor: req.body.autor,
+      titulo: req.body.titulo.trim(),
+      autor: req.body.autor.trim(),
       ano: Number(req.body.ano),
-      genero: req.body.genero
+      genero: req.body.genero.trim()
     };
     livros.push(livro);
     res.status(201).json({ mensagem: "Livro cadastrado com sucesso.", livro });
@@ -91,7 +111,7 @@ router.route("/")
  *       required: true
  *       content:
  *         application/json:
- *           schema: { $ref: '#/components/schemas/LivroInput' }
+ *           schema: { $ref: '#/components/schemas/LivroPatch' }
  *     responses:
  *       200: { description: Livro atualizado }
  *       404: { description: Livro não encontrado }
@@ -118,9 +138,14 @@ router.route("/:id")
     if (!idValido(req.params.id)) return res.status(400).json({ erro: "ID inválido." });
     const livro = livros.find((item) => item.id === Number(req.params.id));
     if (!livro) return res.status(404).json({ erro: "Livro não encontrado." });
-    const ausentes = camposAusentes(req.body);
-    if (ausentes.length) return res.status(400).json({ erro: "Campos obrigatórios ausentes.", campos: ausentes });
-    Object.assign(livro, { ...req.body, ano: Number(req.body.ano) });
+    const erro = validarLivro(req.body);
+    if (erro) return res.status(400).json({ erro });
+    Object.assign(livro, {
+      titulo: req.body.titulo.trim(),
+      autor: req.body.autor.trim(),
+      ano: Number(req.body.ano),
+      genero: req.body.genero.trim()
+    });
     res.json({ mensagem: "Livro atualizado com sucesso.", livro });
   })
   .patch(authMiddleware, (req, res) => {
@@ -131,8 +156,11 @@ router.route("/:id")
     const camposInvalidos = camposRecebidos.filter((campo) => !campos.includes(campo));
     if (camposInvalidos.length) return res.status(400).json({ erro: "Campos inválidos.", campos: camposInvalidos });
     if (!camposRecebidos.length) return res.status(400).json({ erro: "Informe ao menos um campo para atualizar." });
-    Object.assign(livro, req.body);
-    if (req.body.ano !== undefined) livro.ano = Number(req.body.ano);
+    const erro = validarLivro(req.body, true);
+    if (erro) return res.status(400).json({ erro });
+    for (const campo of camposRecebidos) {
+      livro[campo] = campo === "ano" ? Number(req.body[campo]) : req.body[campo].trim();
+    }
     res.json({ mensagem: "Livro atualizado parcialmente com sucesso.", livro });
   })
   .delete(authMiddleware, (req, res) => {
